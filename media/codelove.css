@@ -1,0 +1,68 @@
+.cl-header {
+  background-color: #fa4;
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
+  border-bottom-color: #f60;
+  padding-top: 20px;
+  margin-bottom: 20px;
+}
+
+.logo {
+  height: 20px;
+  width: 20px;
+}
+
+.cl-glyphicon {
+  color: #f60;
+}
+
+.container .jumbotron {
+  background-color: #f8f8f8;
+  border-style: solid;
+  border-radius: 45px;
+  border-width: 3px;
+  border-color: #f60;
+}
+
+.jumbotron h1 {
+  font-family: 'Source Code Pro';
+}
+
+.vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+}
+
+.navbar {
+  background-color: #f8f8f8;
+  border-top-style: none;
+  border-right-style: none;
+  border-left-style: none;
+  border-radius: 0;
+  border-width: 3px;
+  border-color: #f60;
+}
+
+.navbar-default {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.navbar-default .navbar-brand {
+  font-family: 'Source Code Pro';
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover { 
+  color: #000;
+  background: #f60;
+}
+
+.panel-default {
+  background-color: #f8f8f8;
+  border-style: solid;
+  border-radius: 45px;
+  border-width: 3px;
+  border-color: #f60;
+}
