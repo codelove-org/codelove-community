@@ -5,19 +5,21 @@ var https = require('https');
 var url = require('url');
 var querystring = require('querystring');
 var util = require('util');
+var fs = require('fs')
 
 var connect = require('connect');
 var redis = require('connect-redis')(session);
 
-var client_id = ""
-var client_secret = ""
+var config = JSON.parse(fs.readFileSync('./codelove-community.json').toString());
+
+console.log(util.inspect(config));
 
 var app = express();
 
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  secret: '',
+  secret: config.session_secret,
   secureProxy: true,
   store: new redis
 }));
@@ -64,8 +66,8 @@ app.get('/auth/github/callback', function(req, res) {
   code = url.parse(req.url, true).query.code;
   var datastring = '';
   var post_data = querystring.stringify({
-    'client_id': client_id,
-    'client_secret': client_secret,
+    'client_id': config.client_id,
+    'client_secret': config.client_secret,
     'code': code
   });
   var options = {
@@ -99,7 +101,7 @@ app.get('/auth/github/callback', function(req, res) {
 
 app.get('/auth/github/authorize', function(req, res) {
   res.writeHead(302, {'Location' :
-    "http://github.com/login/oauth/authorize?client_id=" + client_id});
+    "http://github.com/login/oauth/authorize?client_id=" + config.client_id});
   res.end();
 });
 
