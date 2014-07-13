@@ -10,8 +10,12 @@ var fs = require('fs')
 var connect = require('connect');
 var redis = require('connect-redis')(session);
 
-var config = JSON.parse(fs.readFileSync('./codelove-community.json').toString());
 console.log("Loaded configuration:\n" + util.inspect(config) + "\n");
+var config = require('./codelove-community.json');
+
+console.log('Loading configuration...');
+console.log(util.inspect(config));
+>>>>>>> master
 
 var app = express();
 
