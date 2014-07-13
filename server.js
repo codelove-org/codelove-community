@@ -11,8 +11,7 @@ var connect = require('connect');
 var redis = require('connect-redis')(session);
 
 var config = JSON.parse(fs.readFileSync('./codelove-community.json').toString());
-
-console.log(util.inspect(config));
+console.log("Loaded configuration:\n" + util.inspect(config) + "\n");
 
 var app = express();
 
@@ -28,16 +27,43 @@ app.use('/media', express.static(__dirname + '/media'));
 
 app.set('view engine', 'jade');
 
-app.get('/codeshare', function(req, res) {
-  var options = {
+function getPublicMembers(callback) {
+   var options = {
     headers: {
       'Accept': 'application/vnd.github.v3+json',
-      'Authorization': 'token ' + req.session.access_token,
       'User-Agent': 'codelove'
     },
     hostname: 'api.github.com',
     method: 'GET', 
-    path: '/orgs/codelove-org/members',
+    path: '/orgs/codelove-org/public_members',
+    port: '443',
+    rejectUnauthorized: 'false',
+    requestCert: 'true'
+  }
+  var members_req = https.request(options, function (response) {
+    var datastring = '';
+    response.on('data', function(chunk) {
+      datastring += chunk;
+    });
+
+    response.on('end', function() {
+      var members = JSON.parse(datastring);
+      callback(members);
+    });
+  });
+
+  members_req.end();
+};
+
+function getPublicGists(member, callback) {
+  var options = {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'codelove-community'
+    },
+    hostname: 'api.github.com',
+    method: 'GET', 
+    path: '/users/' + member + '/gists',
     port: '443',
     rejectUnauthorized: 'false',
     requestCert: 'true'
@@ -48,18 +74,39 @@ app.get('/codeshare', function(req, res) {
       datastring += chunk;
     });
 
-    response.on('end', function() {
-      if (response.statusCode == 401) {
-        res.redirect('/auth/github/authorize');
-        return
-      }
-      var members = JSON.parse(datastring);
-      res.render('codeshare', { members: members});
+    response.on('end', function getPublicGists_end() {
+      var gists = JSON.parse(datastring);
+      console.log(member);
+      console.log(util.inspect(gists));
+      callback(gists);
     });
   });
 
   gists_req.end();
+};
+ 
 
+/*
+function getPublicMemberGists(callback) {
+  getPublicMembers(function(members) {
+    members.forEach(function(member) {
+      getPublicGists(member, data, function(gists) {
+        if
+      });
+    });
+  });
+};
+*/
+app.get('/community/members', function(req, res) {
+  getPublicMembers(function renderPublicMembers(members) {
+    res.render('community/members', { members: members });
+  });
+});
+
+app.get('/community/posts', function(req, res) {
+  getPublicGists('josiahp', function renderPublicGists(gists) {
+    res.render('community/posts', { gists: gists });
+  });
 });
 
 app.get('/auth/github/callback', function(req, res) {
@@ -106,5 +153,5 @@ app.get('/auth/github/authorize', function(req, res) {
 });
 
 var server = app.listen(9000, function() {
-  console.log('Listening on port %d', server.address().port);
+  console.log('Listening on %s:%d', server.address().address, server.address().port);
 });

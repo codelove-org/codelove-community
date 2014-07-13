@@ -1,0 +1,25 @@
+extends ../inc/layout
+block navigation
+  li.active: a(href='#') members
+  li: a(href='posts') posts
+
+block jumbotron
+  .cl-header
+    .container
+      .jumbotron
+        h1
+          | codelove <small>community</small>
+block body
+  .container
+    h2 members
+    br
+    each member, index in members
+        .col-md-4
+          .panel.panel-default
+            .panel-heading
+              h4
+                a(href='#{member.html_url}') #{member.login}
+            .panel-body
+              img(height='90', width='90', src='#{member.avatar_url}')
+
+

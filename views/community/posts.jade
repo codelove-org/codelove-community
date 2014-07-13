@@ -1,0 +1,17 @@
+extends ../inc/layout
+block navigation
+  li: a(href='members') members
+  li.active: a(href='#') posts
+
+block jumbotron
+  .cl-header
+    .container
+      .jumbotron
+        h1
+          | codelove <small>community</small>
+block body
+  .container
+    h2 posts
+    br
+    each gist in gists 
+      h3 #{gist.owner.login} #{gist.html_url}

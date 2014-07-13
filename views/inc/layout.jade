@@ -14,16 +14,8 @@ html
         img.logo(src='/media/images/codelove-logo.png',alt='codelove')
     .collapse.navbar-collapse
       ul.nav.navbar-nav
-        li.active
-          a(href='#') community
-  .cl-header
-    .container
-      .jumbotron
-        h1
-          | codelove <small>community</small>
-  .container
-    each member in members
-      .row
-        | <div class="col-md-2 col-md-offset-1 vcenter"><img height="90" width="90" src="#{member.avatar_url}"></div><!--
-        | --><div class="col-md-2 vcenter"><h3>#{member.login}</h3></div>
+        block navigation
+          li.active: a(href='#') community
+  block jumbotron
 
+  block body
