@@ -86,17 +86,48 @@ function getPublicGists(member, callback) {
 };
  
 
-/*
+
 function getPublicMemberGists(callback) {
+  gists = [ ];
+
   getPublicMembers(function(members) {
-    members.forEach(function(member) {
-      getPublicGists(member, data, function(gists) {
-        if
+    function nextMember(i) {
+      var member = members[i];
+
+      if (!member) { callback(gists); return; }
+
+      var options = {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'codelove-community'
+        },
+        hostname: 'api.github.com',
+        method: 'GET', 
+        path: '/users/' + member.login + '/gists',
+        port: '443',
+        rejectUnauthorized: 'false',
+        requestCert: 'true'
+      }
+      var gists_req = https.request(options, function (response) {
+        var datastring = '';
+        response.on('data', function(chunk) {
+          datastring += chunk;
+        });
+  
+        response.on('end', function getPublicGists_end() {
+          gists = gists.concat(JSON.parse(datastring));
+          console.log(gists);
+          nextMember(i + 1);
+        });
       });
-    });
+  
+      gists_req.end();
+    };
+      
+    nextMember(0);
   });
 };
-*/
+
 app.get('/community/members', function(req, res) {
   getPublicMembers(function renderPublicMembers(members) {
     res.render('community/members', { members: members });
@@ -104,7 +135,8 @@ app.get('/community/members', function(req, res) {
 });
 
 app.get('/community/posts', function(req, res) {
-  getPublicGists('josiahp', function renderPublicGists(gists) {
+  getPublicMemberGists(function renderPublicGists(gists) {
+    console.log(gists);
     res.render('community/posts', { gists: gists });
   });
 });
