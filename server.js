@@ -8,7 +8,9 @@ var util = require('util');
 var fs = require('fs')
 
 var connect = require('connect');
-var redis = require('connect-redis')(session);
+var connect_redis = require('connect-redis')(session);
+var redis    = require('redis'),
+    docstore = redis.createClient();
 
 console.log('Loading configuration...');
 var config = require('./codelove-community.json');
@@ -20,7 +22,7 @@ app.use(session({
   saveUninitialized: true,
   secret: config.session_secret,
   secureProxy: true,
-  store: new redis
+  store: new connect_redis
 }));
 
 app.use('/media', express.static(__dirname + '/media'));
@@ -28,103 +30,14 @@ app.use('/media', express.static(__dirname + '/media'));
 app.set('view engine', 'jade');
 
 function getPublicMembers(callback) {
-   var options = {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'codelove'
-    },
-    hostname: 'api.github.com',
-    method: 'GET', 
-    path: '/orgs/codelove-org/public_members',
-    port: '443',
-    rejectUnauthorized: 'false',
-    requestCert: 'true'
-  }
-  var members_req = https.request(options, function (response) {
-    var datastring = '';
-    response.on('data', function(chunk) {
-      datastring += chunk;
-    });
-
-    response.on('end', function() {
-      var members = JSON.parse(datastring);
-      callback(members);
-    });
+  docstore.get('codelove-community.members', function (err, res) {
+    callback(JSON.parse(res));
   });
-
-  members_req.end();
 };
-
-function getPublicGists(member, callback) {
-  var options = {
-    headers: {
-      'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'codelove-community'
-    },
-    hostname: 'api.github.com',
-    method: 'GET', 
-    path: '/users/' + member + '/gists',
-    port: '443',
-    rejectUnauthorized: 'false',
-    requestCert: 'true'
-  }
-  var gists_req = https.request(options, function (response) {
-    var datastring = '';
-    response.on('data', function(chunk) {
-      datastring += chunk;
-    });
-
-    response.on('end', function getPublicGists_end() {
-      var gists = JSON.parse(datastring);
-      console.log(member);
-      console.log(util.inspect(gists));
-      callback(gists);
-    });
-  });
-
-  gists_req.end();
-};
- 
-
 
 function getPublicMemberGists(callback) {
-  gists = [ ];
-
-  getPublicMembers(function(members) {
-    function nextMember(i) {
-      var member = members[i];
-
-      if (!member) { callback(gists); return; }
-
-      var options = {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'codelove-community'
-        },
-        hostname: 'api.github.com',
-        method: 'GET', 
-        path: '/users/' + member.login + '/gists',
-        port: '443',
-        rejectUnauthorized: 'false',
-        requestCert: 'true'
-      }
-      var gists_req = https.request(options, function (response) {
-        var datastring = '';
-        response.on('data', function(chunk) {
-          datastring += chunk;
-        });
-  
-        response.on('end', function getPublicGists_end() {
-          gists = gists.concat(JSON.parse(datastring));
-          console.log(gists);
-          nextMember(i + 1);
-        });
-      });
-  
-      gists_req.end();
-    };
-      
-    nextMember(0);
+  docstore.get('codelove-community.gists', function (err, res) {
+    callback(JSON.parse(res));
   });
 };
 
@@ -136,7 +49,6 @@ app.get('/community/members', function(req, res) {
 
 app.get('/community/posts', function(req, res) {
   getPublicMemberGists(function renderPublicGists(gists) {
-    console.log(gists);
     res.render('community/posts', { gists: gists });
   });
 });
