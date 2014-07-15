@@ -4,7 +4,6 @@ var redis     = require('redis'),
      rsub     = redis.createClient(),
      docstore = redis.createClient();
 
-console.log('Loading configuration...');
 var config = require('./codelove-community.json');
 
 rsub.subscribe('codelove-community');
@@ -31,8 +30,9 @@ function scheduleCacheGists() {
   rpub.publish('codelove-community', 'cacheGists');
 };
 
-setInterval(scheduleCacheUsers, 5000);
-setInterval(scheduleCacheGists, 5000);
+module.exports.scheduleCacheGists = scheduleCacheGists;
+module.exports.scheduleCacheUsers = scheduleCacheUsers;
+
 
 function cacheUsers() {
   console.log('executing cacheUsers');
@@ -66,6 +66,11 @@ function cacheGists() {
   gists = [ ];
 
   docstore.get('codelove-community.members', function(err, data) {
+    if (!data) {
+      docstore.set('codelove-community.gists', '', redis.print);
+      return;
+    }
+
     members = JSON.parse(data);
     function nextMember(i) {
       var member = members[i];
