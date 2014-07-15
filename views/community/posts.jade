@@ -1,7 +1,8 @@
 extends ../inc/layout
 block navigation
-  li: a(href='members') members
-  li.active: a(href='#') posts
+  li: a(href="members") members
+  li.active: a(href="#") posts
+  li: a(href="https://gist.github.com/") new post
 
 block jumbotron
   .cl-header
@@ -13,5 +14,18 @@ block body
   .container
     h2 posts
     br
-    each gist in gists 
-      h3 #{gist.owner.login} #{gist.html_url}
+    table(class="table table-striped")
+      thead
+        tr
+          th
+          th user
+          th description
+      tbody
+        each gist in gists 
+          tr
+            td(style="width: 50px"): img(src="#{gist.owner.avatar_url}", height="46", width="46", style="float: left;")
+            td(style="vertical-align: middle") #{gist.owner.login}
+            if gist.description == ""
+              td(style="vertical-align: middle"): a(href="#{gist.html_url}") (no description available)
+            else
+              td(style="vertical-align: middle"): a(href="#{gist.html_url}") #{gist.description}
