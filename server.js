@@ -14,6 +14,7 @@ var redis    = require('redis'),
 
 console.log('Loading configuration...');
 var config = require('./codelove-community.json');
+var cache = require('./cache.js');
 
 var app = express();
 
@@ -25,7 +26,13 @@ app.use(session({
   store: new connect_redis
 }));
 
-app.use('/media', express.static(__dirname + '/media'));
+app.use('/community/media', express.static(__dirname + '/media'));
+app.get('/', function(req, res) {
+  res.redirect('/community/members');
+});
+
+setInterval(cache.scheduleCacheUsers, 60000);
+setInterval(cache.scheduleCacheGists, 60000);
 
 app.set('view engine', 'jade');
 
